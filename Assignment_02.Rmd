@@ -9,7 +9,7 @@ Having no clue about how to present results in R Markdown and even less how to p
 
 ## Forword
 
-Before importing any R code and writing the Markdown file I tried my best to follow the advice suggested in the beginning of the second lecture on "**Good Coding Practices**". Therefore I hopefully won't need to change any of my code when importing it to this .Rmd file. Description of the exercises and detailed ideas on its implementation will be added to the Markdown code. Explanation to the R code is obviously in the R script. In case of reproduction of this Markdown file it is necessary to install the package RMarkdown via  *install.packages("rmarkdown")*
+Before importing any R code and writing the Markdown file I tried my best to follow the advice suggested in the beginning of the second lecture on "**Good Coding Practices**". Therefore I hopefully won't need to change any of my code when importing it to this .Rmd file. Description of the exercises and detailed ideas on its implementation will be added to the Markdown code. Explanation to the R code is obviously in the R script. In case of reproduction of this Markdown file it is necessary to install the package RMarkdown, knitr, yaml via  *install.packages("rmarkdown"), install.packages("knitr"), install.packages("yaml")*.
 
 
 ## Exercise 1.1 - Dependency of standard normal distribution
