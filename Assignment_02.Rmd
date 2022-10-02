@@ -2,6 +2,7 @@
 title: "Assignment 2"
 author: "Noah Scheider"
 date: "October 2, 2022"
+header-includes: \usepackage{bbm}
 output: html_document
 ---
 
@@ -13,6 +14,9 @@ Before importing any R code and writing the Markdown file I tried my best to fol
 
 
 ## Exercise 1.1 - Dependency of standard normal distribution
+
+Freedman(2009) Statistical Models, Example 4, p. 75:
+Suppose $Y$ consists of $100$ independent $\mathcal{N}(0, 1)$ random variables. This is pure noise. Let $X \in \mathbb{R}^{100\times50}$ be the design matrix with independent $\mathcal{N}(0, 1)$ variables (just more noise). We regress Y on X (i.e. no intercept). The coefficient of determination $R^{2}$ will be about $50/100=0.5$. Suppose we test each of the $50$ coefficients at the $10 %$ level and keep only the “significant” variables. There will be about $50 \times 0.1 = 5$ keepers (just by chance). Running the regression on the keepers only (again, without intercept), we are likely to get a decent $R^{2}$ (like $0.2$ – decent by the social-science standards) and dazzling t-statistics. Run a couple of simulations and see for yourself.
 
 ```{r}
 y <- rnorm(100)
@@ -26,6 +30,8 @@ cat("R squared error in model with sign coef:", summary(linear_model_sign)$r.squ
 ```
 
 ## Exercise 1.2 - Peeking
+
+The “Example of Peeking” above is an example of a small simulation study, checking whether a designed test strategy respects the nominal level $\alpha = 0.05$ or not. Incorporate further levels of peeking in order to mimic the power-posing study.
 
 ```{r}
 # Idea 1: Get the n most significant p-values and compute the R squared error of their RV
