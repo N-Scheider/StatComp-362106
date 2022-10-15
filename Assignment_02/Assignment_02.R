@@ -9,11 +9,13 @@ rmixnorm <- function(N, mu1, mu2, sigma1, sigma2, tau){
   return(X)
 }
 
-# theoretical RV for a Gaussian mixture
+# theoretical pdf for a Gaussian mixture
 dmixnorm <- function(x, mu1, mu2, sigma1, sigma2, tau){
   y <- (1-tau)*dnorm(x,mu1,sigma1) + tau*dnorm(x,mu2,sigma2)
   return(y)
 }
+
+n = 200
 
 bw = seq(0.1, 0.9, 0.05)
 
@@ -50,8 +52,9 @@ for (k in 1:length(bw)){
 }
 
 par(mfrow=c(1,3))
-plot(bw, y1, col = "red", type = "l", sub = "Err Gaussian Kernel")
-plot(bw, y2, col = "blue", type = "l", sub = "Err Epanechnikov Kernel")
-plot(bw, y3, col = "green", type = "l", sub = "Err Rectangular Kernel")
+plot(bw, y1, col = "red", type = "l", xlab = "Bandwidth", ylab = "Err Gaussian Kernel")
+plot(bw, y2, col = "blue", type = "l", xlab = "Bandwidth", ylab = "Err Epanechnikov Kernel")
+plot(bw, y3, col = "green", type = "l", xlab = "Bandwidth", ylab = "Err Rectangular Kernel")
+mtext("Error plots of Kernels to Density", side = 3, line = - 2, outer = TRUE)
 
 

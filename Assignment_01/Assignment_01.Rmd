@@ -33,7 +33,7 @@ cat("R squared error in model with sign coef:", summary(linear_model_sign)$r.squ
 
 The “Example of Peeking” above is an example of a small simulation study, checking whether a designed test strategy respects the nominal level $\alpha = 0.05$ or not. Incorporate further levels of peeking in order to mimic the power-posing study.
 
-```{r}
+```{r, echo=FALSE}
 # Idea 1: Get the n most significant p-values and compute the R squared error of their RV
 n = 10
 p_limit <- sort(summary(linear_model)$coefficients[,4])[n]
