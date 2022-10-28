@@ -1,0 +1,27 @@
+---
+title: "Assignment 04"
+author: "Noah Scheider"
+date: "10/28/2022"
+output: bookdown::html_document2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+````
+# Exercise
+
+Consider a subset of mcycle data (of the MASS package) for times ≤ 40 and use cross-validation to select
+the polynomial degree of p from candidate values p = 1, 2, 3, and the bandwidth h from candidate values h = 3, 4, . . . , 15
+for a local polynomial smoother as implemented by the locpol() function from the package of the same name.
+Notes:
+Compare your results with what you would expect based on Manual 10 in order to avoid wrong conclusions.
+even better: use your own visualizations to verify your progress You may run into issues for large p and small h if you use small number of folds.
+Beware of how your points are ordered.
+
+
+## R Markdown
+
+
