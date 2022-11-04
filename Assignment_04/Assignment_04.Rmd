@@ -1,27 +1,69 @@
 ---
 title: "Assignment 04"
 author: "Noah Scheider"
-date: "10/28/2022"
+date: "11/04/2022"
 output: bookdown::html_document2
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(MASS)
+library(locpol)
 ```
 
-
-````
 # Exercise
 
-Consider a subset of mcycle data (of the MASS package) for times ≤ 40 and use cross-validation to select
-the polynomial degree of p from candidate values p = 1, 2, 3, and the bandwidth h from candidate values h = 3, 4, . . . , 15
-for a local polynomial smoother as implemented by the locpol() function from the package of the same name.
+Consider a subset of mcycle data (of the MASS package) for times $≤ 40$ and use cross-validation to select
+
+* the polynomial degree of p from candidate values $p = 1, 2, 3$, and 
+* the bandwidth $h$ from candidate values $h = 3, 4, . . . , 15$
+
+for a local polynomial smoother as implemented by the `locpol()` function from the package of the same name.
+
 Notes:
-Compare your results with what you would expect based on Manual 10 in order to avoid wrong conclusions.
-even better: use your own visualizations to verify your progress You may run into issues for large p and small h if you use small number of folds.
-Beware of how your points are ordered.
 
+* Compare your results with what you would expect based on Manual 10 in order to avoid wrong conclusions.
+  * even better: use your own visualizations to verify your progress
+* You may run into issues for large p and small h if you use small number of folds.
+* Beware of how your points are ordered.
 
-## R Markdown
+```{r fig.cap=c("Figure that plots the different degrees p of a local polynomial regression against different bandwidths (from 3:15)", "plots the local polynomial regression with the bandwidth and the degree with the smallest MSE"),  fig.align='center', echo=FALSE}
+data(mcycle)
+mcycle <- mcycle[mcycle$times <= 40, ]
+p_degree <- c(1, 2, 3)
+hgrid <- 3:15
+
+# data frame to capture different errors
+df_err <- data.frame(matrix(nrow=length(hgrid), ncol=3))
+colnames(df_err) <- c("Degree 1", "Degree 2", "Degree 3")
+rownames(df_err) <- c(hgrid)
+
+# length of data set
+n <- length(mcycle$times)
+
+# LOO and MSE
+for (p in p_degree) {
+  for (h in hgrid) {
+    mse <- 0
+    for (i in 1:n) {
+      model <- locpol(formula = accel[-i]~times[-i], data = mcycle, bw = h, deg = p, xeval = mcycle$times[i])
+      mse <- mse + (mcycle$accel[i]-model$lpFit[2])^2/n
+    }
+    df_err[which(rownames(df_err) == h), p] <- mse
+  }
+}
+
+plot(hgrid, df_err$`Degree 1`, type = 'l', col = 1, ylab = "MSE")
+lines(hgrid, df_err$`Degree 2`, col = 2)
+lines(hgrid, df_err$`Degree 3`, col = 3)
+legend('topleft', legend = c(colnames(df_err)), col = 1:3, pch = 16)
+
+min_min <- which(df_err == min(df_err, na.rm = TRUE), arr.ind = TRUE)
+best_model <- locpol(formula = accel~times, data = mcycle, bw = min_min[1], deg = min_min[2], xeval = mcycle$times)
+plot(mcycle$times, mcycle$accel)
+lines(mcycle$times, best_model$lpFit$accel)
+legend('topleft', legend = sprintf("h = %.f, p = %.f, MSE = %.2f", min_min[1], min_min[2], df_err[min_min]))
+
+```
 
 
