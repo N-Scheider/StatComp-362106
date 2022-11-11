@@ -34,14 +34,13 @@ p <- function(x, mu1, mu2, sigma1, sigma2, tau){
 # Returns optimization of parameters for EM of mixed gaussian distribution
 MaximizationStep <- function(X, mu1, mu2, sigma1, sigma2, tau){
   N <- length(X)
-  sum_p <- sum(sapply(X, function(x){p(x, mu1, mu2, sigma1, sigma2, tau)}))
-  sum_p_min <- sum(sapply(X, function(x){1-p(x, mu1, mu2, sigma1, sigma2, tau)}))
-  
-  tau_up <- 1/((N-sum_p)/sum_p+1)
-  mu1_up <- sum(sapply(X, function(x){(1-p(x, mu1, mu2, sigma1, sigma2, tau))*x}))/sum_p_min
-  sigma1_up <- sqrt(2*sqrt(2*pi)*sum(sapply(X, function(x){(1-p(x, mu1, mu2, sigma1, sigma2, tau))*(x-mu1)}))/sum_p_min)
-  mu2_up <- sum(sapply(X, function(x){p(x, mu1, mu2, sigma1, sigma2, tau)*x}))/sum_p
-  sigma2_up <- sqrt(2*sqrt(2*pi)*sum(sapply(X, function(x){(p(x, mu1, mu2, sigma1, sigma2, tau))*(x-mu2)}))/sum_p)
+  p <- sapply(X, function(x){p(x, mu1, mu2, sigma1, sigma2, tau)})
+
+  tau_up <- sum(p)/N
+  mu1_up <- sum(1-p %*% X)/sum(1-p)
+  sigma1_up <- sqrt(sum((1-p) %*% (X-mu1)^2))/sum(1-p)
+  mu2_up <- sum(p %*% X)/sum(p)
+  sigma2_up <- sqrt(sum(p %*% (X-mu2)^2))/sum(p)
   
   return(c(mu1_up, mu2_up, sigma1_up, sigma2_up, tau_up))
 }
@@ -51,21 +50,21 @@ MaximizationStep <- function(X, mu1, mu2, sigma1, sigma2, tau){
 # Test algorithm
 
 N <- 100
-X <- rmixnorm(N, 1, 3, 4, 4, 0.5)
+X <- rmixnorm(N, 1, 3, 2, 2, 0.5)
 
 #Initialization
 
 mu1 <- 1; mu2 <- 2
-sigma1 <- 2; sigma2 <- 5
+sigma1 <- 2; sigma2 <- 3
 tau <- 0.3
 
 a <- ExpectationStep(X, mu1, mu2, sigma1, sigma2, tau)
+b <- MaximizationStep(X, mu1, mu2, sigma1, sigma2, tau)
 
 
-for (i in 1:20) {
-  browser()
-  b <- MaximizationStep(mu1, mu2, sigma1, sigma2, tau)
-  c <- ExpectationStep(X, b[1], b[2], b[3], b[4], b[5])
+for (i in 1:1000) {
+  b <- MaximizationStep(X, b[1], b[2], b[3], b[4], b[5])
+  a <- ExpectationStep(X, b[1], b[2], b[3], b[4], b[5])
 }
 
 print(b)
