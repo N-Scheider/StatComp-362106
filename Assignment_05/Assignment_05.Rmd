@@ -1,0 +1,158 @@
+---
+title: "Assignment 05"
+author: "Noah Scheider"
+date: "11/11/2022"
+output: bookdown::html_document2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Exercise
+
+Simulate data (using Manual 9) from the mixture of two Gaussian distributions and implement the EM algorithm from Example 2 above. Use absolute change in $l$ of observed data as convergence criterion.
+
+In order to fnisih the assignment I imported the functions `rmixnorm` and `dmixnorm` from the suggested Module 9 
+```{r echo=FALSE}
+# Imported from Module 9
+rmixnorm <- function(N, mu1, mu2, sigma1, sigma2, tau){
+  ind <- I(runif(N) > tau)
+  X <- rep(0,N)
+  X[ind] <- rnorm(sum(ind), mu1, sigma1)
+  X[!ind] <- rnorm(sum(!ind), mu2, sigma2)
+  return(X)
+}
+
+dmixnorm <- function(x, mu1, mu2, sigma1, sigma2, tau){
+  y <- (1-tau)*dnorm(x, mean = mu1, sd = sigma1) + tau*dnorm(x, mean = mu2, sd = sigma2)
+  return(y)
+}
+```
+
+
+```{r echo=FALSE}
+
+# Returns expected value of given parameters for gaussian mixed distribution
+ExpectationStep <- function(X, mu1, mu2, sigma1, sigma2, tau){
+  N <- length(X)
+  p <- dnorm(X, mean = mu2, sd = sigma2)*tau/dmixnorm(X, mu1, mu2, sigma1, sigma2, tau)
+
+  sum1 <- log(1-tau)*(N-sum(p))
+  sum2 <- log(tau)*sum(p)
+  sum3 <- sum((1-p) * log(dnorm(X, mean = mu1, sd = sigma1)))
+  sum4 <- sum(p * log(dnorm(X, mean = mu2, sd = sigma2)))
+  
+  return(sum1+sum2+sum3+sum4)
+}
+
+# Returns optimization of parameters for EM of mixed gaussian distribution
+MaximizationStep <- function(X, mu1, mu2, sigma1, sigma2, tau){
+  N <- length(X)
+  p <- dnorm(X, mean = mu2, sd = sigma2)*tau/dmixnorm(X, mu1, mu2, sigma1, sigma2, tau)
+
+  tau_up <- sum(p)/N
+  mu1_up <- sum((1-p) * X)/sum(1-p)
+  sigma1_up <- sqrt(sum((1-p) * (X-mu1_up)^2)/sum(1-p))
+  mu2_up <- sum(p * X)/sum(p)
+  sigma2_up <- sqrt(sum(p * (X-mu2_up)^2)/sum(p))
+  
+  return(c(mu1_up, mu2_up, sigma1_up, sigma2_up, tau_up))
+}
+
+
+
+```
+
+I performed two simulations with $N=1000$ choosing the parameters of the theoretical gaussian mixture as follows:
+
+* $\mu_1 = 0$
+* $\mu_2 = 4$
+* $\sigma_1 = 0.5$
+* $\sigma_2 = 2$
+* $\tau = 0.8$
+
+This will allow the pmf to have a nice double bell shaped look. We want to approximate these parameters given the initial starting values:
+
+* $\mu_1^{start} = -1$
+* $\mu_2^{start} = 6$
+* $\sigma_1^{start} = 1$
+* $\sigma_2^{start} = 4$
+* $\tau^{start} = 0.6$
+
+
+```{r fig.cap="The theoretical density of gaussian mixture with parameters as described in text above is given in black. The empirical density of the gaussian mixture with parameters estimated by the according EM-Algorithm is given in red", fig.align='center', echo=FALSE}
+
+# Initialization
+
+N <- 1000
+X <- rmixnorm(N, 0, 4, 0.5, 2, 0.8)
+
+mu1 <- -1; mu2 <- 6
+sigma1 <- 1; sigma2 <- 4
+tau <- 0.6
+
+a <- ExpectationStep(X, mu1, mu2, sigma1, sigma2, tau)
+b <- MaximizationStep(X, mu1, mu2, sigma1, sigma2, tau)
+
+for (i in 1:1000){
+  b <- MaximizationStep(X, b[1], b[2], b[3], b[4], b[5])
+  a <- ExpectationStep(X, b[1], b[2], b[3], b[4], b[5])
+}
+
+
+print(sprintf("The EM Algorithm approximates the inital parameters as mu1 = %.2f, mu2 = %.2f, sigma1 = %.2f, sigma2 = %.2f, tau = %.2f", b[1], b[2], b[3], b[4], b[5]))
+
+xgrid <- seq(from = -4, to = 8, 0.1)
+plot(xgrid, dmixnorm(xgrid, 0, 4, 0.5, 2, 0.8), 'l', xlab = "x", ylab = "density")
+lines(xgrid, dmixnorm(xgrid, b[1], b[2], b[3], b[4], b[5]), col = 2)
+legend("topright", legend=c("Theoretical pmf", "Approximated pmf"), col = c(1, 2), pch = 16)
+
+```
+
+We see a slight difference in the probability mass function. Following the suggestion of the exercise I approximate the same values as before with a different initial setting of starting parameters. For conveniance I will rewrite the theoretical parameters:
+
+* $\mu_1 = 0$
+* $\mu_2 = 4$
+* $\sigma_1 = 0.5$
+* $\sigma_2 = 2$
+* $\tau = 0.8$
+
+and
+
+* $\mu_1^{start} = 3$
+* $\mu_2^{start} = 1$
+* $\sigma_1^{start} = 3$
+* $\sigma_2^{start} = 1$
+* $\tau^{start} = 0.4$
+
+```{r fig.cap="The theoretical density of gaussian mixture with parameters as described in text above is given in black. The empirical density of the gaussian mixture with parameters estimated by the according EM-Algorithm is given in red", fig.align='center', echo=FALSE}
+
+# Initialization
+
+N <- 1000
+X <- rmixnorm(N, 0, 4, 0.5, 2, 0.8)
+
+mu1 <- 3; mu2 <- 1
+sigma1 <- 3; sigma2 <- 1
+tau <- 0.4
+
+a <- ExpectationStep(X, mu1, mu2, sigma1, sigma2, tau)
+b <- MaximizationStep(X, mu1, mu2, sigma1, sigma2, tau)
+
+for (i in 1:1000){
+  b <- MaximizationStep(X, b[1], b[2], b[3], b[4], b[5])
+  a <- ExpectationStep(X, b[1], b[2], b[3], b[4], b[5])
+}
+
+
+print(sprintf("The EM Algorithm approximates the inital parameters as mu1 = %.2f, mu2 = %.2f, sigma1 = %.2f, sigma2 = %.2f, tau = %.2f", b[1], b[2], b[3], b[4], b[5]))
+
+xgrid <- seq(from = -4, to = 8, 0.1)
+plot(xgrid, dmixnorm(xgrid, 0, 4, 0.5, 2, 0.8), 'l', xlab = "x", ylab = "density")
+lines(xgrid, dmixnorm(xgrid, b[1], b[2], b[3], b[4], b[5]), col = 3)
+legend("topright", legend=c("Theoretical pmf", "Approximated pmf"), col = c(1, 3), pch = 16)
+
+```
+
+This two different setting show that the different starting values are crucial in order to have good convergence two the empirical parameters. As having choosen parameters in a way that they lay closer at the other ones we can identify that the EM just switches them which enables us to still have a good fit. Note that my algorithm does not include a loss function but iterates always $1000$ times.
