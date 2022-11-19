@@ -1,0 +1,43 @@
+---
+title: "Assignment 06"
+author: "Noah Scheider"
+date: "11/18/2022"
+output: bookdown::html_document2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
+
+```{r data, include=FALSE}
+library(VGAM)
+```
+
+# Exercise
+
+We currently have $3$ ways of generating Gaussian samples in R:
+
+* the native `rnorm()` using the inverse transform 
+* Box-Muller transform
+* rejection sampling (see lecture notes for code)
+
+For $50$ simulation runs, and for all three methods:
+
+* generate 105 samples using
+* time the generation process using `Sys.time()`
+* calculate the KS statistic ([the one-sample Kolmogorov-Smirnov statistic](https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test)) to check quality of the sample, e.g.
+  
+  * `X <- rnorm(10ˆ5)`
+  * `F_hat <- ecdf(X)`
+  * `F_hat_eval <- F_hat(sort(X))`
+  * `F_eval <- pnorm(sort(X))`
+  * `KS_stats <- max(abs(F_hat_eval - F_eval))`
+
+Compare the three methods using your simulation results.
+
+```{r fig.align='center'}
+
+```
+
+We see that
+
