@@ -38,6 +38,7 @@ for (i in 1:sim) {
   # plot(xgrid, dnorm(xgrid), ylim = c(0, 0.7), type = 'l')
   # lines(xgrid, c*dlaplace(xgrid), col = "blue")
   # legend("topleft", legend = c("proposal", "target"), col = c("green", "black"), pch = 16)
+  
   s3 <- Sys.time()
   X_rej <- rep(0,N)
   c <- sqrt(2/pi)*exp(1/2)
@@ -76,3 +77,11 @@ plot(1:sim, KS_stats_inv, ylim = c(0, max(KS_stats_box)), , xlab = "simulation",
 lines(1:sim, KS_stats_box, col = 2)
 lines(1:sim, KS_stats_rej, col = 3)
 legend("topright", legend = leg, col = c(1:3), pch = 15)
+
+
+c <- sqrt(2/pi)*exp(1/2)
+xgrid <- seq(-3, 3, 0.01)
+plot(xgrid, dnorm(xgrid), ylim = c(0, 0.7), type = 'l')
+lines(xgrid, c*dlaplace(xgrid), col = "green")
+legend("topleft", legend = c("proposal", "target"), col = c("green", "black"), pch = 16)
+

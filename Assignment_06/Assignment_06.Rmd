@@ -19,7 +19,7 @@ We currently have 3 ways of generating Gaussian samples in R:
 
 * the native `rnorm()` using the inverse transform 
 * Box-Muller transform
-* rejection sampling (see lecture notes for code)
+* Rejection-Sampling (see lecture notes for code)
 
 For 50 simulation runs, and for all three methods:
 
@@ -106,23 +106,37 @@ lines(1:sim, t_box, col = 2)
 lines(1:sim, t_rej, col = 3)
 legend("topright", legend = leg, col = c(1:3), pch = 15)
 
-plot(1:sim, t_inv, type = "l", col = 1, xlab = "simulation", ylab = "time")
+plot(1:sim, t_inv, type = "l", col = 1, xlab = "simulation", ylab = "time", ylim = c(0.03, 0.036))
 lines(1:sim, t_box, col = 2)
 legend("topright", legend = leg[-3], col = c(1:2), pch = 15)
 
+```
+
+```{r include=FALSE, echo=FALSE}
 dev.off()
+```
+
+We observe that the Rejection-Sampling method needs distinguishly more time throughout all the simulations where as Box-Muller and the Inverse method go toe-to-toe. Looking sharply at the results it seems that the Inverse method is slightly faster. Therefore we should pick the Inverse or the Box-Muller method when trying to generate standard normally distributed random variables with respect to computational efficiency. The cause of extended generating time of the Rejection-Sampling method may be due to a non-optimal choice of the proposal function enveloping the target function. In our case we went for a Laplacian distribution with the standard normal parameters. As a scaling constant we analytically proved the optimal value $c = \sqrt{\frac{2}{\pi}} \cdot e^{\frac{1}{2}}$. The scaled proposal function in comparision with its target function looks as follows:
+
+```{r fig.cap="The Laplacian pdf with standard normal parameters was choosen in order to envlope the standard normal pdf after being scaled", fig.align='center', echo=FALSE}
+
+c <- sqrt(2/pi)*exp(1/2)
+xgrid <- seq(-5, 5, 0.01)
+plot(xgrid, dnorm(xgrid), ylim = c(0, 0.7), type = 'l', xlab = "x", ylab = "density at x")
+lines(xgrid, c*dlaplace(xgrid), col = "green")
+legend("topright", legend = c("proposal", "target"), col = c("green", "black"), pch = 16)
 
 ```
 
-We see that the rejection methods needs way more time through out all the simulations where as Box-Muller and the Inverse method go toe-to-toe. Looking sharply at the results it seems that the Inverse method is slightly faster.
+We see that our proposal function mimics the behavior of the target function quite well. Nevertheless we observe that the shape of the proposal and the target function differ considerably in their global maximum at 0.
 
 ```{r fig.cap="The figures shows the the Kolmogorov-Smirnov Statistic of different sampling methods in 50 different simulations", fig.align='center', echo=FALSE}
 
-plot(1:sim, KS_stats_inv, ylim = c(0, max(KS_stats_box)), , xlab = "simulation", ylab = "Kolmogorov-Smirnov statistic", type = "l", col = 1)
+plot(1:sim, KS_stats_inv, ylim = c(0.001, 0.006), , xlab = "simulation", ylab = "Kolmogorov-Smirnov statistic", type = "l", col = 1)
 lines(1:sim, KS_stats_box, col = 2)
 lines(1:sim, KS_stats_rej, col = 3)
 legend("topright", legend = leg, col = c(1:3), pch = 15)
 
 ```
 
-We observe strong similiratiy between the Kolmogorov-Smirnov Statistics. This allows us to conclude equal "quality" of the genereated random variables.
+We observe strong similarity between the Kolmogorov-Smirnov statistics. This allows us to conclude equal "quality" of the generated random variables of the different methods. Overall, we can now decide in favour of the Inverse method when sampling standard normal Gaussian random variables as it seems to be the best algorithm, compared to the Box-Muller Method and the Rejection-Sampling method, with respect to its computational speed and the quality of its output.
