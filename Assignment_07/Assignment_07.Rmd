@@ -1,0 +1,72 @@
+---
+title: "Assignment 07"
+author: "Noah Scheider"
+date: "12/2/2022"
+output: bookdown::html_document2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Exercise
+
+For $X_1,\ldots,X_{100} \stackrel{iid}{\sim} Exp(2)$, consider the following CIs for $\mathbb{E} X_1 = \frac{1}{2}$:
+
+* asymptotic: $\left(-\infty, \bar{X}_N + \frac{\widehat{\sigma}}{\sqrt{N}} z(\alpha) \right)$
+* studentized (bootstrap): $\left(-\infty, \bar{X}_N + \frac{\widehat{\sigma}}{\sqrt{N}} q^\star(\alpha) \right)$ with $T^\star = \sqrt{N}\frac{\bar{X}_N^\star - \bar{X}_N}{\widehat{\sigma}^\star}$
+* non-studentized ($\star$): $\left(-\infty, \bar{X}_N + \frac{1}{\sqrt{N}} q^\star(\alpha) \right)$ with $T^\star = \sqrt{N}\big(\bar{X}_N^\star - \bar{X}_N\big)$
+* sample-truth-scaled ($\star$): $\left(-\infty, \bar{X}_N + \frac{\widehat{\sigma}}{\sqrt{N}} q^\star(\alpha) \right)$ with $T^\star = \sqrt{N}\frac{\bar{X}_N^\star - \bar{X}_N}{\widehat{\sigma}}$
+
+Verify coverage of these intervals via a simulation study of $10^3$ runs and report the coverage proportions as a table.
+Specifically, for every single one of $10^3$ simulation runs:
+
+* generate new data $X_1,\ldots,X_{100} \stackrel{iid}{\sim} Exp(2)$
+* calculate the four confidence intervals
+* check whether $\mathbb{E} X_1 = 1/2$ lies inside the respective intervals (yes = coverage)
+* report the coverage proportion for the respective intervals as a single table
+
+```{r echo=FALSE}
+count <- rep(0, 4)
+
+for (i in 1:1000) {
+  N <- 100
+  B <- 1000
+  alpha <- 0.05
+  
+  # Generate RV
+  e <- rexp(N, rate = 2)
+  mean_e <- mean(e)
+  sd_e <- sd(e)
+  
+  # Bootstrap (imported from lecture notes)
+  boot_strap <- array(sample(e, N*B, replace=TRUE), c(B, N))
+  boot_stat_stud <- sapply(1:B, function(b){sqrt(N)*(mean(boot_strap[b,])-mean_e)/sd(boot_strap[b,])})
+  boot_stat_non_stud <- sapply(1:B, function(b){sqrt(N)*(mean(boot_strap[b,])-mean_e)})
+  boot_stat_sample <- sapply(1:B, function(b){sqrt(N)*(mean(boot_strap[b,])-mean_e)/sd_e})
+  
+  # Calculate CI
+  asymp_ci <- mean_e + sd(e)*qnorm(1-alpha)/sqrt(N)
+  stud_ci <- mean_e + sd_e*quantile(boot_stat_stud, 1-alpha)/sqrt(N)
+  non_stud_ci <- mean_e + quantile(boot_stat_non_stud, 1-alpha)/sqrt(N)
+  sample_ci <- mean_e + quantile(boot_stat_sample, 1-alpha)*sd_e/sqrt(N)
+  
+  lst <- list(asymp_ci, stud_ci, non_stud_ci, sample_ci)
+  
+  for (c in 1:4) {
+    count[c] <- count[c]+(1/2 <= lst[c])
+  }
+}
+
+cov <- count/1000
+
+df_cov <- data.frame("Coverage_Ratio"=cov)
+rownames(df_cov) <- c("asymptotic", "studentized", "non-studentized", "sample-truth-scaled")
+
+```
+
+```{r echo=FALSE}
+df_cov
+```
+
+We conclude that, all the different possibilities return a coverage ratio that somewhat approaches our confidence level, which we chose as $95\%$. However, the methods do differ in terms of precision. It seems, that the asymptotic and the non-studentized/sample-truth-scaled confidence intervals give back a coverage ratio that is closest to our confidence level. The studentized confidence interval undershoots it, meaning, that it captures the true estimator too fewly. The non-studentized and the sample-truth-scaled coverage coincide by construction of their quantiles.
