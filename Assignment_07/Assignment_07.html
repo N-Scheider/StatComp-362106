@@ -192,11 +192,11 @@ Specifically, for every single one of <span class="math inline">\(10^3\)</span> 
 <li>report the coverage proportion for the respective intervals as a single table</li>
 </ul>
 <pre><code>##                     Coverage_Ratio
-## asymptotic                   0.932
-## studentized                  0.909
-## non-studentized              0.931
-## sample-truth-scaled          0.931</code></pre>
-<p>We conclude that, all the different possibilities return a coverage ratio that somewhat approaches our confidence level, which we chose as <span class="math inline">\(95\%\)</span>. However, the methods do differ in terms of precision. It seems, that the asymptotic and the non-studentized/sample-truth-scaled confidence intervals give back a coverage ratio that is closest to our confidence level. The studentized confidence interval overshoots it, meaning, that it is a bit too wide and catches the mean slightly more often. The non-studentized and the sample-truth-scaled coverage coincide by construction of their quantiles.</p>
+## asymptotic                   0.913
+## studentized                  0.889
+## non-studentized              0.925
+## sample-truth-scaled          0.925</code></pre>
+<p>We conclude that, all the different possibilities return a coverage ratio that somewhat approaches our confidence level, which we chose as <span class="math inline">\(95\%\)</span>. However, the methods do differ in terms of precision. It seems, that the asymptotic and the non-studentized/sample-truth-scaled confidence intervals give back a coverage ratio that is closest to our confidence level. The studentized confidence interval undershoots it, meaning, that it captures the true estimator too fewly. The non-studentized and the sample-truth-scaled coverage coincide by construction of their quantiles.</p>
 </div>
 
 
