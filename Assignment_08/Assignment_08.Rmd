@@ -52,13 +52,18 @@ dposterior <- function(x, y, scale = 1.2, sd = .6) {
   return(k/n)
 }
 
+f <- function(x, y){
+ return(dnorm(y, mean=x, sd=0.6)*dweibull(x, shape=2, scale=1.2))
+}
+
 MetropolisHasting <- function(N, y){
   MC <- rep(0, N+1)
   acc <- rep(0, N)
   MC[1] <- y
   for (n in 1:N) {
     X <- rnorm(1, mean=y, sd=0.6)
-    acc[n] <- min(1, dweibull(X, shape=2, scale=1.2)/dweibull(MC[n], shape=2, scale=1.2)*dnorm(MC[n], mean=y, sd=0.6)/dnorm(X, mean=y, sd=0.6))
+    # acc[n] <- min(1, dweibull(X, shape=2, scale=1.2)/dweibull(MC[n], shape=2, scale=1.2)*dnorm(MC[n], mean=y, sd=0.6)/dnorm(X, mean=y, sd=0.6))
+    acc[n] <- min(1, f(X, y)/f(MC[n], y)*dnorm(MC[n], mean=y, sd=0.6)/dnorm(X, mean=y, sd=0.6))
     u <- runif(1, min=0, max=1)
     MC[n+1] <- X*(u<=acc[n]) + MC[n]*(u>acc[n])
   }
@@ -70,16 +75,16 @@ To get a better picture of what we are dealing with and what exactly we are goin
 
 ```{r fig.cap="Trace-plots of the Markov Chains conditioned on different observations Y=0.5,1,2", fig.align='center', echo=FALSE}
 
-set.seed(2001)
+set.seed(2000)
 N <- 100
 
 MC_a <- MetropolisHasting(N, 0.5)[[1]]
 MC_b <- MetropolisHasting(N, 1)[[1]]
 MC_c <- MetropolisHasting(N, 2)[[1]]
 
-plot(1:(N+1), MC_a, "l", col=1, xlab="time", ylab="state")
-lines(1:(N+1), MC_b, col=2)
-lines(1:(N+1), MC_c, col=3)
+plot(1:(N+1), MC_a, "l", col=1, xlab="time", ylab="state", ylim=c(0, 2.8), lwd=1.2)
+lines(1:(N+1), MC_b, col=2, lwd=1.2)
+lines(1:(N+1), MC_c, col=3, lwd=1.2)
 title(main="MC with Metropolis Hasting")
 legend("topright", legend=c("y=0.5", "y=1", "y=2"), col=c(1,2,3), pch=16)
 
@@ -87,7 +92,7 @@ legend("topright", legend=c("y=0.5", "y=1", "y=2"), col=c(1,2,3), pch=16)
 We see that the Markov chains conditioned on $y=0.5$ and especially the one conditioned $y=2$ have noticeable rejection phases, where the Algorithm rejects the proposal given by $X|Y=y \sim \mathcal{N}(y, 0.6)$ consecutively. Lets see how this translates into the according histograms.
 
 
-```{r fig.cap="Histogram of Markov Chain Sampled by a Metropolis Hasting Algorithm with proposal and target function described in the exercise with a posteriory (black) and proposal (red) densities", fig.align='center', echo=FALSE}
+```{r fig.cap="Histogram of Markov Chain Sampled by a Metropolis Hasting Algorithm with proposal and target function described in the exercise with a posterior (black) and proposal (red) densities", fig.align='center', echo=FALSE}
 
 N <- 1000
 burn_in <- 1000
@@ -119,14 +124,12 @@ title("Histogram, Posteriori and Proposal densities", line = - 2, outer = TRUE)
 
 ```
 
-In this plot we are able to compare the frequency of a MC being in a certain state to an analytically given posteriori density and the proposal density of the Metropolis-Hasting Algorithm. The posteriori density is plotted in black, whereas the proposal density is plotted in red. The densities are thus evaluated on the range of the states of its according Markov Chain after a burn-in of the first $1000$ samples for every chain.
+In this plot we are able to compare the frequency of a MC being in a certain state to an analytically given posterior density and the proposal density of the Metropolis-Hasting Algorithm. The posterior density is plotted in black, whereas the proposal density is plotted in red. The densities are thus evaluated on the range of the states of its according Markov Chain after a burn-in of the first $1000$ samples for every chain. From the exercise we can derive that the density we are looking for is proportional to a mix of a normal and a Weibull distribution, so posterior $p(x|y) \propto p(y|x)\cdot p(x)$, where $p(y|x)\sim \mathcal{N}(x,0.6),$ and $~p(x) \sim \text{Weibull}(\text{shape}=2, \text{scale}=1.2)$ 
 
-We can definitely conclude that there is a strong connection. Looking sharply at the results we can even assume that the densities given $y=1$ actually approximate its according histogram better then compared to the other ones. By analyzing the previous trace-plots of the different Markov Chains we found out, that the Chains given $y=0.5,2$ reject far more often then for $y=1$. Hence, there seems to be a link between the acceptance rate of the Metropolis-Hasting Algorithm and the approximation by a known posteriori density. Furthermore, the densities seem to be on the side of the histogram with the less information or equivalently the visited states (For example the means of the densities for the last histogram seem to be more on the right side, even though the MC visited more states on the left side, very handwavy spoken). In the following we plot the different acceptance rates for the different $y$ that will underline our assumption.
+We can definitely conclude that we have chosen a good proposal density. By this we mean that by a similiar looking density to the analytically given posterior density, we can enhance the efficiency of our algorithm by leading to higher acceptance rates. The Metropolis-Hastings algorithms allows us to sample from a distribution we only know that it is proportional to a composition of distribution. Looking sharply at the results we can even assume that the densities given $y=1$ actually approximate its according histogram better then compared to the other ones. By analyzing the previous trace-plots of the different Markov Chains we found out, that the Chains given $y=0.5,2$ reject far more often then for $y=1$. Hence, there seems to be a link between the acceptance rate of the Metropolis-Hasting Algorithm and the approximation by a known posteriori density. Surprisingly, the densities seem to be on the side of the histogram with the less information or equivalently the visited states (For example the means of the densities for the last histogram seem to be more on the right side, even though the MC visited more states on the left side, very handwavy spoken). In the following we plot the different acceptance rates for the different $y$ that will underline our assumption.
 
 ```{r echo=FALSE}
 print(paste0("Acceptance rate for y=0.5: ", acc_a))
 print(paste0("Acceptance rate for y=1: ", acc_b))
 print(paste0("Acceptance rate for y=2: ", acc_c))
 ```
-
-Another subtlety is the fact that the last histogram hints a second peek near to $0$, which does not match with neither of the posteriori or the proposal density. Again, this might be due to an unfavorable generation of proposals which were then rejected very often in a row.
